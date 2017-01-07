@@ -14,6 +14,7 @@ MainWindow::MainWindow(QWidget *parent):
     connect(tcpSocket,SIGNAL(connected()), SLOT(connected()));
     connect(tcpSocket,SIGNAL(error(QAbstractSocket::SocketError)), SLOT(error(QAbstractSocket::SocketError)));
     connect(tcpSocket, SIGNAL(stateChanged(QAbstractSocket::SocketState)), SLOT(stateChange(QAbstractSocket::SocketState)));
+    connect(tcpSocket,SIGNAL(hostFound()), SLOT(hostFound()));
     tcpSocket->connectToHost("127.0.0.1",1251);
 
     QTextDocument *doc = ui->textField->document();
@@ -40,16 +41,29 @@ void MainWindow::readData() {
     std::cout<<"Received: "<<readed.toStdString()<<std::endl;
     QStringList stringArray = QString(readed).split(':');
     std::string allText = ui->textField->toPlainText().toStdString();
-    int x = stringArray[2].toInt() - 1;
 
     char command = stringArray[0].toStdString()[0];
     if(command == 'r') {
+        int x = stringArray[2].toInt() - 1;
         allText.erase(allText.begin() + x + 1);
-    } else if(command == 'a'){
+    } else if(command == 'a') {
+        int x = stringArray[2].toInt() - 1;
         allText.insert(allText.begin() + x, stringArray[1].toStdString()[0]);
     } else if(command == 'd') {
+        int x = stringArray[2].toInt() - 1;
         int end = stringArray[3].toInt() - 1;
         allText.erase(allText.begin() + x + 1, allText.begin() + end + 1);
+    } else if(command == 'c' && stringArray[1].toStdString()[0] == 'e') {
+        auto printable = QStringLiteral("%1:%2:e").arg('c').arg(ui->textField->toPlainText());
+        QByteArray ba = printable.toLatin1();
+        const char *c_str2 = ba.data();
+        if(tcpSocket->write(c_str2, 1024) == -1) {
+            std::cout<<"Not send !!!!"<<std::endl;
+        } else {
+            std::cout<<"Wysłano"<<std::endl;
+        }
+    } else if(command == 'c') {
+        allText.insert(0,stringArray[1].toStdString());
     }
     ui->textField->clear();
     canWrite = false;
@@ -122,6 +136,18 @@ void MainWindow::disconnected() {
 
 void MainWindow::connected() {
     std::cout<<"CONNECTED"<<std::endl;
+    char command;
+    command = 'c'; //connected
+    auto printable = QStringLiteral("%1:e").arg(command);
+    QByteArray ba = printable.toLatin1();
+    const char *c_str2 = ba.data();
+    if(tcpSocket->write(c_str2, 16) == -1) {
+        std::cout<<"Not send !!!!"<<std::endl;
+    } else {
+        std::cout<<"Wysłano"<<std::endl;
+    }
+
+
 }
 
 void MainWindow::error(QAbstractSocket::SocketError error) {
@@ -142,4 +168,13 @@ void MainWindow::on_textField_selectionChanged() {
     this->endSelection = cursor.selectionEnd();
     std::cout<<this->startSelection<<" "<<this->endSelection<<std::endl;
     this->selectionActive = true;
+}
+
+void MainWindow::hostFound() {
+    std::cout<<"FOUND: "<<std::endl;
+}
+
+void MainWindow::on_pushButton_2_clicked()
+{
+
 }

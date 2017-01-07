@@ -16,7 +16,7 @@
 
 #define SERVER_PORT 1251
 #define QUEUE_SIZE 5
-#define BUF_SIZE 16
+#define BUF_SIZE 1024
 std::vector<int> clients;
 int readedFrom;
 pthread_mutex_t lock;
@@ -128,7 +128,6 @@ int main(int argc, char* argv[])
         printf("\n mutex init failed\n");
         return 1;
     }
-
 
     if (pthread_create(&thread_sender, NULL, sender, NULL) < 0) {
         printf("Błąd przy próbie utworzenia wątku, kod błędu");

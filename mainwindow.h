@@ -25,6 +25,9 @@ private slots:
     void error(QAbstractSocket::SocketError);
     void stateChange(QAbstractSocket::SocketState);
     void on_textField_selectionChanged();
+    void hostFound();
+
+    void on_pushButton_2_clicked();
 
 public:
     void backspaceService();
