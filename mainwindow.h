@@ -24,9 +24,14 @@ private slots:
     void connected();
     void error(QAbstractSocket::SocketError);
     void stateChange(QAbstractSocket::SocketState);
+    void on_textField_selectionChanged();
+
 public:
     void backspaceService();
     bool backSpace = false;
+    bool selectionActive = false;
+    int startSelection = 0;
+    int endSelection = 0;
 private:
     Ui::MainWindow *ui;
     QTcpSocket *tcpSocket;

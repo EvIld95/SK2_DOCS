@@ -14,7 +14,7 @@
 #include <pthread.h>
 #include <vector>
 
-#define SERVER_PORT 1250
+#define SERVER_PORT 1251
 #define QUEUE_SIZE 5
 #define BUF_SIZE 16
 std::vector<int> clients;
@@ -28,18 +28,6 @@ struct thread_data_t {
     int socket_descriptor;
     char readedThread[BUF_SIZE];
 };
-
-std::vector<std::string> split(std::string str,std::string sep){
-    char* cstr=const_cast<char*>(str.c_str());
-    char* current;
-    std::vector<std::string> arr;
-    current=strtok(cstr,sep.c_str());
-    while(current!=NULL){
-        arr.push_back(current);
-        current=strtok(NULL,sep.c_str());
-    }
-    return arr;
-}
 
 
 void *receiver(void *t_data) {
@@ -67,7 +55,6 @@ void *receiver(void *t_data) {
 }
 
 void *sender(void *t_data) {
-
     while (1) {
         if (strcmp(readed, "") != 0 && strcmp(readed, "close0") != 0) {
             std::cout<<"User: "<<readedFrom<<" says: "<<readed<<std::endl;
@@ -85,9 +72,7 @@ void *sender(void *t_data) {
             }
             sprintf(readed, "%c", '\0');
             pthread_mutex_unlock(&writeLock);
-            //memset(readed, 0, 255);
-
-
+            //memset(readed, 0, 255)
         }
     }
 

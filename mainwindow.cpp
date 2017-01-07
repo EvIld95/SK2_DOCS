@@ -14,7 +14,7 @@ MainWindow::MainWindow(QWidget *parent):
     connect(tcpSocket,SIGNAL(connected()), SLOT(connected()));
     connect(tcpSocket,SIGNAL(error(QAbstractSocket::SocketError)), SLOT(error(QAbstractSocket::SocketError)));
     connect(tcpSocket, SIGNAL(stateChanged(QAbstractSocket::SocketState)), SLOT(stateChange(QAbstractSocket::SocketState)));
-    tcpSocket->connectToHost("127.0.0.1",1250);
+    tcpSocket->connectToHost("127.0.0.1",1251);
 
     QTextDocument *doc = ui->textField->document();
     QFont font = doc->defaultFont();
@@ -35,20 +35,21 @@ void MainWindow::readData() {
     if(receivedMessage == NULL) {
         receivedMessage = new char[16];
     }
-    tcpSocket->read(receivedMessage, 16);
-    //QByteArray readed = tcpSocket->readAll();
-    std::cout<<"Received: "<<receivedMessage<<std::endl;
-    QStringList stringArray = QString(receivedMessage).split(':');
+    //tcpSocket->read(receivedMessage, 16);
+    QByteArray readed = tcpSocket->readAll();
+    std::cout<<"Received: "<<readed.toStdString()<<std::endl;
+    QStringList stringArray = QString(readed).split(':');
     std::string allText = ui->textField->toPlainText().toStdString();
     int x = stringArray[2].toInt() - 1;
-    //if x >
-
 
     char command = stringArray[0].toStdString()[0];
     if(command == 'r') {
         allText.erase(allText.begin() + x + 1);
     } else if(command == 'a'){
         allText.insert(allText.begin() + x, stringArray[1].toStdString()[0]);
+    } else if(command == 'd') {
+        int end = stringArray[3].toInt() - 1;
+        allText.erase(allText.begin() + x + 1, allText.begin() + end + 1);
     }
     ui->textField->clear();
     canWrite = false;
@@ -62,18 +63,30 @@ void MainWindow::on_textField_textChanged()
 {
     if(canWrite) {
         char command;
-        char str1 = (ui->textField->toPlainText().at(position-1)).toLatin1();
+
+        char str1;
+        int pos = position;
         if(backSpace) {
-            std::cout<<"Typed backspace"<<std::endl;
-            str1 = '0';
-            command = 'r'; //remove
+            if(this->selectionActive) {
+                command = 'd';
+                str1 = '0';
+                this->selectionActive = false;
+            } else {
+                std::cout<<"Typed backspace"<<std::endl;
+                str1 = '0';
+                command = 'r'; //remove
+            }
         }
         else {
            str1 = (ui->textField->toPlainText().at(position-1)).toLatin1();
            command = 'a'; //add
         }
+
+        if(command == 'd') {
+            pos = this->startSelection;
+        }
         //have to make removal service
-        auto printable = QStringLiteral("%1:%2:%3:e").arg(command).arg(str1).arg(position);//.arg(yCursor);
+        auto printable = QStringLiteral("%1:%2:%3:%4:e").arg(command).arg(str1).arg(pos).arg(endSelection);
         std::cout<<"Text changed: "<<str1<<' '<<xCursor<<yCursor<<std::endl;
         QByteArray ba = printable.toLatin1();
         const char *c_str2 = ba.data();
@@ -117,4 +130,16 @@ void MainWindow::error(QAbstractSocket::SocketError error) {
 
 void MainWindow::stateChange(QAbstractSocket::SocketState elem) {
     std::cout<<"STATE: "<<elem<<std::endl;
+}
+
+void MainWindow::on_textField_selectionChanged() {
+    QTextCursor cursor = ui->textField->textCursor();
+
+    if(!cursor.hasSelection())
+        return; // No selection available
+
+    this->startSelection = cursor.selectionStart();
+    this->endSelection = cursor.selectionEnd();
+    std::cout<<this->startSelection<<" "<<this->endSelection<<std::endl;
+    this->selectionActive = true;
 }
