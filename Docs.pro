@@ -6,6 +6,12 @@
 
 QT       += core gui
 QT       += network
+
+
+win32-g++ {
+  QMAKE_CXXFLAGS += -std=c++11
+}
+
 greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 
 TARGET = Docs

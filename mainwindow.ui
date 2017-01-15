@@ -15,6 +15,9 @@
   </property>
   <widget class="QWidget" name="centralWidget">
    <widget class="QPlainTextEdit" name="textField">
+    <property name="enabled">
+     <bool>false</bool>
+    </property>
     <property name="geometry">
      <rect>
       <x>10</x>
@@ -24,56 +27,94 @@
      </rect>
     </property>
    </widget>
+   <widget class="QLineEdit" name="serwerTextEdit">
+    <property name="geometry">
+     <rect>
+      <x>120</x>
+      <y>30</y>
+      <width>151</width>
+      <height>21</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>127.0.0.1</string>
+    </property>
+   </widget>
    <widget class="QLabel" name="label">
     <property name="geometry">
      <rect>
       <x>20</x>
-      <y>20</y>
-      <width>131</width>
-      <height>31</height>
+      <y>30</y>
+      <width>101</width>
+      <height>21</height>
      </rect>
     </property>
     <property name="text">
-     <string>Connect to session:</string>
+     <string>Adres serwera:</string>
     </property>
    </widget>
-   <widget class="QComboBox" name="comboBox">
+   <widget class="QLabel" name="label_2">
     <property name="geometry">
      <rect>
-      <x>150</x>
-      <y>20</y>
-      <width>131</width>
-      <height>31</height>
+      <x>290</x>
+      <y>30</y>
+      <width>60</width>
+      <height>21</height>
      </rect>
     </property>
+    <property name="text">
+     <string>Port:</string>
+    </property>
    </widget>
-   <widget class="QPushButton" name="pushButton">
+   <widget class="QLineEdit" name="portTextEdit">
     <property name="enabled">
      <bool>false</bool>
     </property>
     <property name="geometry">
      <rect>
-      <x>290</x>
-      <y>20</y>
-      <width>113</width>
-      <height>32</height>
+      <x>330</x>
+      <y>30</y>
+      <width>121</width>
+      <height>21</height>
      </rect>
+    </property>
+    <property name="inputMask">
+     <string/>
+    </property>
+    <property name="text">
+     <string>1251</string>
+    </property>
+   </widget>
+   <widget class="QPushButton" name="connectButton">
+    <property name="geometry">
+     <rect>
+      <x>480</x>
+      <y>30</y>
+      <width>151</width>
+      <height>21</height>
+     </rect>
+    </property>
+    <property name="acceptDrops">
+     <bool>false</bool>
     </property>
     <property name="text">
      <string>Connect</string>
     </property>
    </widget>
-   <widget class="QPushButton" name="pushButton_2">
+   <widget class="QPushButton" name="disconnectButton">
+    <property name="enabled">
+     <bool>false</bool>
+    </property>
     <property name="geometry">
      <rect>
-      <x>440</x>
-      <y>20</y>
-      <width>161</width>
-      <height>32</height>
+      <x>670</x>
+      <y>30</y>
+      <width>141</width>
+      <height>21</height>
      </rect>
     </property>
     <property name="text">
-     <string>Create new session</string>
+     <string>Disconnect</string>
     </property>
    </widget>
   </widget>

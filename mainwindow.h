@@ -3,6 +3,7 @@
 
 #include <QMainWindow>
 #include <QtNetwork>
+#include <QMessageBox>
 
 namespace Ui {
 class MainWindow;
@@ -27,10 +28,13 @@ private slots:
     void on_textField_selectionChanged();
     void hostFound();
 
-    void on_pushButton_2_clicked();
+    void on_connectButton_clicked();
+    void on_disconnectButton_clicked();
 
 public:
     void backspaceService();
+    void closeEvent (QCloseEvent *event);
+
     bool backSpace = false;
     bool selectionActive = false;
     int startSelection = 0;
@@ -44,7 +48,10 @@ private:
     int position;
     const int lineWidth = 77;
     bool canWrite;
+    QString previousText = "";
+    int count = 0;
     char* receivedMessage;
+    bool closeWindow = false;
 };
 
 #endif // MAINWINDOW_H

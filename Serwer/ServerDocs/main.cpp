@@ -17,65 +17,111 @@
 #define SERVER_PORT 1251
 #define QUEUE_SIZE 5
 #define BUF_SIZE 1024
+
 std::vector<int> clients;
-int readedFrom;
+std::vector<char*> messages;
+std::vector<int> senders;
+std::vector<pthread_t*> threads;
+
 pthread_mutex_t lock;
 pthread_mutex_t writeLock;
 pthread_mutex_t lockNextClient;
-char readed[BUF_SIZE];
 
 struct thread_data_t {
     int socket_descriptor;
     char readedThread[BUF_SIZE];
+    pthread_t * thredID;
 };
 
-
-void *receiver(void *t_data) {
-    //struct thread_data_t *th_data = (struct thread_data_t*)t_data;
+void *senderBuf(void *t_data) {
 
     while (1) {
-        if (read(((struct thread_data_t*)t_data)->socket_descriptor, ((struct thread_data_t*)t_data)->readedThread, BUF_SIZE) == -1) {
-            printf("Błąd przy próbie CZYTANIA socketu, kod błędu");
-            exit(-1);
-        } else {
-            pthread_mutex_lock(&writeLock); //aby nie nadpisac wiadomosci ktora nie zostala odczytana i wyslana przez serwer
-            readedFrom = ((struct thread_data_t*)t_data)->socket_descriptor;
-            strncpy(readed, ((struct thread_data_t*)t_data)->readedThread,  BUF_SIZE);
-            if (strcmp(readed, "close0") == 0) {
-                for(int i = 0; i<clients.size() ; i++) {
-                    if(clients[i] == readedFrom) {
-                        std::cout<<"USUWAM"<<std::endl;
-                        clients.erase(clients.begin() + i);
-                        //write(clients[i], "close0", BUF_SIZE);
+        if(messages.size()>0 && senders.size() > 0) {
+
+            char *message = messages[0];
+            messages.erase(messages.begin());
+            int sender = senders[0];
+            senders.erase(senders.begin());
+            pthread_t* threadID = threads[0];
+            threads.erase(threads.begin());
+
+            if (strcmp(message, "b:newUser:-") == 0) {
+                if(clients.size() > 1) {
+                    std::cout<<"newUser"<<std::endl;
+                    if(write(clients[0], "b:c:-", 5) == -1) {
+                        std::cout<<"ERROR"<<std::endl;
+                    } //sending to oldest client
+                }
+            } else if (strcmp(message, "b:close:-") == 0) {
+                int toRemove = 0;
+                for(int k = 0; k < clients.size(); k++) {
+                    if(clients[k] == sender) {
+                        toRemove = k;
+                        break;
+                    }
+                }
+
+                if(write(sender, "b:f:-", 5) == -1) {
+                    std::cout<<"ERROR"<<std::endl;
+                }
+                clients.erase(clients.begin()+toRemove);
+                std::cout<<"Closing..."<<std::endl;
+                pthread_kill(*threadID,0);
+
+            } else {
+                for (int k = 0; k < clients.size(); k++) {
+                    if (clients[k] == sender) {
+                        continue;
+                    } else {
+
+                        ssize_t write_result = write(clients[k], message, BUF_SIZE);
+                        if (write_result == -1) {
+                            printf("Błąd przy próbie pisania do socketa, kod błędu: %d\n", (int) write_result);
+                            exit(-1);
+                        } else {
+                            std::cout << "Sending: " << message << " " << "Result: " << write_result << std::endl;
+                        }
                     }
                 }
             }
+            //delete [] message;
         }
     }
 }
 
-void *sender(void *t_data) {
+void *receiver2(void *t_data) {
     while (1) {
-        if (strcmp(readed, "") != 0 && strcmp(readed, "close0") != 0) {
-            std::cout<<"User: "<<readedFrom<<" says: "<<readed<<std::endl;
-            for (int k = 0; k < clients.size(); k++) {
-                if(clients[k] == readedFrom) {
-                    continue;
-                } else {
-                    std::cout<<"Sending: "<<readed<<std::endl;
-                    ssize_t write_result = write(clients[k], readed, BUF_SIZE);
-                    if (write_result == -1) {
-                        printf("Błąd przy próbie pisania do socketa, kod błędu: %d\n", (int) write_result);
-                        exit(-1);
-                    }
-                }
-            }
-            sprintf(readed, "%c", '\0');
-            pthread_mutex_unlock(&writeLock);
-            //memset(readed, 0, 255)
-        }
-    }
+        char* message = new char[BUF_SIZE];
+        int alreadyRead = 0;
 
+        while(1) {
+            int size = read(((struct thread_data_t*)t_data)->socket_descriptor, ((struct thread_data_t*)t_data)->readedThread, 1);
+            if(size != -1) {
+                message[alreadyRead] = ((struct thread_data_t*)t_data)->readedThread[0];
+                if(message[0] == 'b') {
+                    //std::cout << message[alreadyRead] << std::endl;
+                    if (message[alreadyRead] == '-') {
+                        messages.push_back(message);
+                        senders.push_back(((struct thread_data_t *) t_data)->socket_descriptor);
+                        threads.push_back(((struct thread_data_t *) t_data)->thredID);
+                        std::cout<<"Loading to buffer:"<<message<<std::endl;
+
+                        break;
+                    }
+                    alreadyRead += size;
+                } else {
+                    if (message != nullptr) {
+                        delete[] message;
+                    }
+                    break;
+                }
+            } else {
+                printf("Błąd przy próbie CZYTANIA socketu, kod błędu2");
+                exit(-1);
+            }
+        }
+
+    }
 }
 
 int main(int argc, char* argv[])
@@ -113,7 +159,7 @@ int main(int argc, char* argv[])
     }
 
 
-    pthread_t thread_receiver;
+
     pthread_t thread_sender;
 
     if (pthread_mutex_init(&lock, NULL) != 0) {
@@ -129,7 +175,7 @@ int main(int argc, char* argv[])
         return 1;
     }
 
-    if (pthread_create(&thread_sender, NULL, sender, NULL) < 0) {
+    if (pthread_create(&thread_sender, NULL, senderBuf, NULL) < 0) {
         printf("Błąd przy próbie utworzenia wątku, kod błędu");
         exit(-1);
     }
@@ -138,23 +184,24 @@ int main(int argc, char* argv[])
     while(1) {
         connection_socket_descriptor = accept(server_socket_descriptor, NULL, NULL);
 
-        if(clients.size() >= 3) {
-            write(connection_socket_descriptor, "close0", BUF_SIZE);
-            close(connection_socket_descriptor);
+        if(clients.size() >= 9) {
+            write(connection_socket_descriptor, "b:f:-", 5);
+            std::cout<<"To much users!"<<std::endl;
         } else {
+            pthread_t* thread_receiver = new pthread_t;
             clients.push_back(connection_socket_descriptor);
 
             thread_data_t* t_data = new thread_data_t();
             t_data->socket_descriptor = connection_socket_descriptor;
 
-            if (pthread_create(&thread_receiver, NULL, receiver, (void *) t_data) < 0) {
-                perror("could not create thread");
+            if (pthread_create(thread_receiver, NULL, receiver2, (void *) t_data) < 0) {
+                perror("Could not create thread");
                 return 1;
             }
+            t_data->thredID = thread_receiver;
+
         }
 
     }
 
-    close(server_socket_descriptor);
-    return(0);
 }
