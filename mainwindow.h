@@ -52,6 +52,7 @@ private:
     int count = 0;
     char* receivedMessage;
     bool closeWindow = false;
+    bool clientConnected = false;
 };
 
 #endif // MAINWINDOW_H

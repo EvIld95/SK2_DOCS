@@ -180,6 +180,7 @@ void MainWindow::disconnected() {
     ui->textField->setDisabled(true);
     ui->disconnectButton->setDisabled(true);
     ui->connectButton->setDisabled(false);
+    clientConnected = false;
 }
 
 void MainWindow::connected() {
@@ -191,6 +192,8 @@ void MainWindow::connected() {
     if(tcpSocket->write("b:newUser:-", 12) == -1) {
         std::cout<<"Not send !!!!"<<std::endl;
     }
+
+    clientConnected = true;
 
 }
 
@@ -222,6 +225,7 @@ void MainWindow::hostFound() {
 void MainWindow::on_connectButton_clicked()
 {
     tcpSocket->connectToHost(ui->serwerTextEdit->text(),ui->portTextEdit->text().toInt());
+    closeWindow = false;
 }
 
 void MainWindow::on_disconnectButton_clicked()
@@ -248,7 +252,11 @@ void MainWindow::closeEvent (QCloseEvent *event)
                 std::cout<<"Close command sent"<<std::endl;
             }
         }
-        event->ignore();
+        if(clientConnected == false) {
+           event->accept();
+        } else {
+           event->ignore();
+        }
     } else {
         event->accept();
     }
