@@ -131,39 +131,49 @@
     <property name="geometry">
      <rect>
       <x>670</x>
-      <y>80</y>
+      <y>67</y>
       <width>151</width>
       <height>16</height>
      </rect>
     </property>
     <property name="text">
-     <string>Available documents</string>
+     <string>Shared documents</string>
     </property>
    </widget>
    <widget class="QPushButton" name="addDoc">
     <property name="geometry">
      <rect>
-      <x>670</x>
-      <y>100</y>
-      <width>81</width>
-      <height>32</height>
+      <x>760</x>
+      <y>90</y>
+      <width>31</width>
+      <height>31</height>
      </rect>
     </property>
     <property name="text">
-     <string>Add</string>
+     <string>+</string>
     </property>
    </widget>
    <widget class="QPushButton" name="removeDoc">
     <property name="geometry">
      <rect>
-      <x>740</x>
-      <y>100</y>
-      <width>81</width>
-      <height>32</height>
+      <x>790</x>
+      <y>90</y>
+      <width>31</width>
+      <height>31</height>
      </rect>
     </property>
     <property name="text">
-     <string>Remove</string>
+     <string>-</string>
+    </property>
+   </widget>
+   <widget class="QTextEdit" name="docName">
+    <property name="geometry">
+     <rect>
+      <x>670</x>
+      <y>90</y>
+      <width>91</width>
+      <height>31</height>
+     </rect>
     </property>
    </widget>
   </widget>

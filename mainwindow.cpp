@@ -27,6 +27,8 @@ MainWindow::MainWindow(QWidget *parent):
     keyEnterReceiver* key = new keyEnterReceiver();
     ui->textField->installEventFilter(key);
     canWrite = true;
+    QListWidgetItem *initDocItem = new QListWidgetItem("Document1");
+    ui->documentList->insertItem(0, initDocItem);
 }
 
 MainWindow::~MainWindow() {
@@ -260,4 +262,20 @@ void MainWindow::closeEvent (QCloseEvent *event)
     } else {
         event->accept();
     }
+}
+
+void MainWindow::on_addDoc_clicked()
+{
+    QListWidgetItem *testItem = new QListWidgetItem(ui->docName->toPlainText());
+    ui->docName->clear();
+    ui->documentList->insertItem(0, testItem);
+}
+
+void MainWindow::on_removeDoc_clicked()
+{
+    QModelIndexList selectedItems = ui->documentList->selectionModel()->selectedRows();
+    foreach(QModelIndex item, selectedItems) {
+        ui->documentList->model()->removeRow(item.row());
+    }
+
 }
