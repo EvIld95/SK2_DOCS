@@ -31,6 +31,9 @@ private slots:
     void on_connectButton_clicked();
     void on_disconnectButton_clicked();
 
+    void on_removeDoc_clicked();
+    void on_addDoc_clicked();
+
 public:
     void backspaceService();
     void closeEvent (QCloseEvent *event);
