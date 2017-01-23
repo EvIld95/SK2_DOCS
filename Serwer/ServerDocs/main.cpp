@@ -19,9 +19,10 @@
 #define BUF_SIZE 1024
 
 std::vector<int> clients;
-std::vector<char*> messages;
+std::vector<char *> messages;
+std::vector<char *> docs;
 std::vector<int> senders;
-std::vector<pthread_t*> threads;
+std::vector<pthread_t *> threads;
 
 pthread_mutex_t lock;
 pthread_mutex_t writeLock;
@@ -30,43 +31,43 @@ pthread_mutex_t lockNextClient;
 struct thread_data_t {
     int socket_descriptor;
     char readedThread[BUF_SIZE];
-    pthread_t * thredID;
+    pthread_t *thredID;
 };
 
 void *senderBuf(void *t_data) {
 
     while (1) {
-        if(messages.size()>0 && senders.size() > 0) {
+        if (messages.size() > 0 && senders.size() > 0) {
 
             char *message = messages[0];
             messages.erase(messages.begin());
             int sender = senders[0];
             senders.erase(senders.begin());
-            pthread_t* threadID = threads[0];
+            pthread_t *threadID = threads[0];
             threads.erase(threads.begin());
 
             if (strcmp(message, "b:newUser:-") == 0) {
-                if(clients.size() > 1) {
-                    std::cout<<"newUser"<<std::endl;
-                    if(write(clients[0], "b:c:-", 5) == -1) {
-                        std::cout<<"ERROR"<<std::endl;
+                if (clients.size() > 1) {
+                    std::cout << "newUser" << std::endl;
+                    if (write(clients[0], "b:c:-", 5) == -1) {
+                        std::cout << "ERROR" << std::endl;
                     } //sending to oldest client
                 }
             } else if (strcmp(message, "b:close:-") == 0) {
                 int toRemove = 0;
-                for(int k = 0; k < clients.size(); k++) {
-                    if(clients[k] == sender) {
+                for (int k = 0; k < clients.size(); k++) {
+                    if (clients[k] == sender) {
                         toRemove = k;
                         break;
                     }
                 }
 
-                if(write(sender, "b:f:-", 5) == -1) {
-                    std::cout<<"ERROR"<<std::endl;
+                if (write(sender, "b:f:-", 5) == -1) {
+                    std::cout << "ERROR" << std::endl;
                 }
-                clients.erase(clients.begin()+toRemove);
-                std::cout<<"Closing..."<<std::endl;
-                pthread_kill(*threadID,0);
+                clients.erase(clients.begin() + toRemove);
+                std::cout << "Closing..." << std::endl;
+                pthread_kill(*threadID, 0);
 
             } else {
                 for (int k = 0; k < clients.size(); k++) {
@@ -91,20 +92,21 @@ void *senderBuf(void *t_data) {
 
 void *receiver2(void *t_data) {
     while (1) {
-        char* message = new char[BUF_SIZE];
+        char *message = new char[BUF_SIZE];
         int alreadyRead = 0;
 
-        while(1) {
-            int size = read(((struct thread_data_t*)t_data)->socket_descriptor, ((struct thread_data_t*)t_data)->readedThread, 1);
-            if(size != -1) {
-                message[alreadyRead] = ((struct thread_data_t*)t_data)->readedThread[0];
-                if(message[0] == 'b') {
+        while (1) {
+            int size = read(((struct thread_data_t *) t_data)->socket_descriptor,
+                            ((struct thread_data_t *) t_data)->readedThread, 1);
+            if (size != -1) {
+                message[alreadyRead] = ((struct thread_data_t *) t_data)->readedThread[0];
+                if (message[0] == 'b') {
                     //std::cout << message[alreadyRead] << std::endl;
                     if (message[alreadyRead] == '-') {
                         messages.push_back(message);
                         senders.push_back(((struct thread_data_t *) t_data)->socket_descriptor);
                         threads.push_back(((struct thread_data_t *) t_data)->thredID);
-                        std::cout<<"Loading to buffer:"<<message<<std::endl;
+                        std::cout << "Loading to buffer:" << message << std::endl;
 
                         break;
                     }
@@ -124,8 +126,7 @@ void *receiver2(void *t_data) {
     }
 }
 
-int main(int argc, char* argv[])
-{
+int main(int argc, char *argv[]) {
     int server_socket_descriptor;
     int connection_socket_descriptor;
     int bind_result;
@@ -144,9 +145,9 @@ int main(int argc, char* argv[])
         fprintf(stderr, "%s: Błąd przy próbie utworzenia gniazda..\n", argv[0]);
         exit(1);
     }
-    setsockopt(server_socket_descriptor, SOL_SOCKET, SO_REUSEADDR, (char*)&reuse_addr_val, sizeof(reuse_addr_val));
+    setsockopt(server_socket_descriptor, SOL_SOCKET, SO_REUSEADDR, (char *) &reuse_addr_val, sizeof(reuse_addr_val));
 
-    bind_result = bind(server_socket_descriptor, (struct sockaddr*)&server_address, sizeof(struct sockaddr));
+    bind_result = bind(server_socket_descriptor, (struct sockaddr *) &server_address, sizeof(struct sockaddr));
     if (bind_result < 0) {
         fprintf(stderr, "%s: Błąd przy próbie dowiązania adresu IP i numeru portu do gniazda.\n", argv[0]);
         exit(1);
@@ -157,7 +158,6 @@ int main(int argc, char* argv[])
         fprintf(stderr, "%s: Błąd przy próbie ustawienia wielkości kolejki.\n", argv[0]);
         exit(1);
     }
-
 
 
     pthread_t thread_sender;
@@ -181,17 +181,17 @@ int main(int argc, char* argv[])
     }
 
 
-    while(1) {
+    while (1) {
         connection_socket_descriptor = accept(server_socket_descriptor, NULL, NULL);
 
-        if(clients.size() >= 9) {
+        if (clients.size() >= 9) {
             write(connection_socket_descriptor, "b:f:-", 5);
-            std::cout<<"To much users!"<<std::endl;
+            std::cout << "To much users!" << std::endl;
         } else {
-            pthread_t* thread_receiver = new pthread_t;
+            pthread_t *thread_receiver = new pthread_t;
             clients.push_back(connection_socket_descriptor);
 
-            thread_data_t* t_data = new thread_data_t();
+            thread_data_t *t_data = new thread_data_t();
             t_data->socket_descriptor = connection_socket_descriptor;
 
             if (pthread_create(thread_receiver, NULL, receiver2, (void *) t_data) < 0) {
