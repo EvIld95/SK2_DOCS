@@ -15,7 +15,7 @@ MainWindow::MainWindow(QWidget *parent):
     connect(tcpSocket,SIGNAL(disconnected()),SLOT(disconnected()));
     connect(tcpSocket,SIGNAL(connected()), SLOT(connected()));
     connect(tcpSocket,SIGNAL(error(QAbstractSocket::SocketError)), SLOT(error(QAbstractSocket::SocketError)));
-    connect(tcpSocket, SIGNAL(stateChanged(QAbstractSocket::SocketState)), SLOT(stateChange(QAbstractSocket::SocketState)));
+    connect(tcpSocket,SIGNAL(stateChanged(QAbstractSocket::SocketState)), SLOT(stateChange(QAbstractSocket::SocketState)));
     connect(tcpSocket,SIGNAL(hostFound()), SLOT(hostFound()));
     //tcpSocket->connectToHost("127.0.0.1",1253);
 
@@ -266,16 +266,46 @@ void MainWindow::closeEvent (QCloseEvent *event)
 
 void MainWindow::on_addDoc_clicked()
 {
-    QListWidgetItem *testItem = new QListWidgetItem(ui->docName->toPlainText());
+    auto docNamePlain = ui->docName->toPlainText();
+    QListWidgetItem *testItem = new QListWidgetItem(docNamePlain);
     ui->docName->clear();
     ui->documentList->insertItem(0, testItem);
+
+    if(tcpSocket->write("b:newDoc:-", 12) == -1) {
+        std::cout<<"newDoc not send!!!!"<<std::endl;
+    }
 }
 
 void MainWindow::on_removeDoc_clicked()
 {
     QModelIndexList selectedItems = ui->documentList->selectionModel()->selectedRows();
     foreach(QModelIndex item, selectedItems) {
+        QString removedDoc = ui->documentList->currentItem()->text();
+        auto removedDocCommand = QStringLiteral("b:delDoc:%1:-").arg(removedDoc);
+        QByteArray ba = removedDocCommand.toLatin1();
+        const char *c_str2 = ba.data();
+
+        if(tcpSocket->write(c_str2, removedDocCommand.length()) == -1) {
+            std::cout<<"newDoc not send!!!!"<<std::endl;
+        } else {
+            std::cout<<"newDoc send!!!!"<<std::endl;
+        }
+
         ui->documentList->model()->removeRow(item.row());
     }
 
+}
+
+void MainWindow::on_documentList_itemDoubleClicked(QListWidgetItem *item)
+{
+    QString selectedDoc = item->text();
+    auto removedDocCommand = QStringLiteral("b:selDoc:%1:-").arg(selectedDoc);
+    QByteArray ba = removedDocCommand.toLatin1();
+    const char *c_str2 = ba.data();
+
+    if(tcpSocket->write(c_str2, removedDocCommand.length()) == -1) {
+        std::cout<<"selDoc not send!!!!"<<std::endl;
+    } else {
+        std::cout<<"selDoc send!!!!"<<std::endl;
+    }
 }

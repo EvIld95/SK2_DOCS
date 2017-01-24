@@ -1,0 +1,3 @@
+/Users/matis11/Dev/SK2_DOCS/Serwer/ServerDocs/cmake-build-debug/CMakeFiles/edit_cache.dir
+/Users/matis11/Dev/SK2_DOCS/Serwer/ServerDocs/cmake-build-debug/CMakeFiles/rebuild_cache.dir
+/Users/matis11/Dev/SK2_DOCS/Serwer/ServerDocs/cmake-build-debug/CMakeFiles/ServerDocs.dir
