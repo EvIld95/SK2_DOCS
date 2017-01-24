@@ -14,7 +14,7 @@
 #include <pthread.h>
 #include <vector>
 
-#define SERVER_PORT 1251
+#define SERVER_PORT 1229
 #define QUEUE_SIZE 5
 #define BUF_SIZE 1024
 
@@ -46,7 +46,21 @@ void *senderBuf(void *t_data) {
             pthread_t *threadID = threads[0];
             threads.erase(threads.begin());
 
-            if (strcmp(message, "b:newUser:-") == 0) {
+            if (strcmp(message, "b:newDoc:-") == 0) {
+                if (clients.size() > 1) {
+                    std::cout << "newDoc" << std::endl;
+                    if (write(sender, "b:t:-", 5) == -1) {
+                        std::cout << "ERROR" << std::endl;
+                    } //sending back to sender
+                }
+            } else if (strcmp(message, "b:delDoc:-") == 0) {
+                if (clients.size() > 1) {
+                    std::cout << "delDoc" << std::endl;
+                    if (write(sender, "b:t:-", 5) == -1) {
+                        std::cout << "ERROR" << std::endl;
+                    } //sending back to sender
+                }
+            } else if (strcmp(message, "b:newUser:-") == 0) {
                 if (clients.size() > 1) {
                     std::cout << "newUser" << std::endl;
                     if (write(clients[0], "b:c:-", 5) == -1) {

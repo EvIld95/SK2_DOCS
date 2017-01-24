@@ -98,6 +98,31 @@ void MainWindow::readData() {
             }
         } else if(command == 'c' && stringArray.length() > 3) {
             allText = stringArray[2].toStdString(); //receive text
+        } else if(command == 't' && stringArray[2].toStdString()[0] == '-' && (ui->documentList->count() > 0)) {
+
+            QString allDocs;
+            for(int i = 0; i < ui->documentList->count(); ++i)
+            {
+                QListWidgetItem* item = ui->documentList->item(i);
+                allDocs.append(item->text() + ";");
+            }
+
+            auto printable = QStringLiteral("b:%1:%2:-").arg('t').arg(allDocs); //if new connection send all docs to new client
+            QByteArray ba = printable.toLatin1();
+            const char *c_str2 = ba.data();
+            if(tcpSocket->write(c_str2, printable.length()) == -1) {
+                std::cout<<"Not send !!!!"<<std::endl;
+            }
+        } else if(command == 't' && stringArray.length() > 3) {
+            QString joinedDocs = stringArray[2]; //receive text
+            QStringList docs = joinedDocs.split(";", QString::SkipEmptyParts);
+            ui->documentList->clear();
+
+            foreach(QString doc, docs) {
+                QListWidgetItem *newItem = new QListWidgetItem(doc);
+                ui->documentList->insertItem(0, newItem);
+            }
+
         } else {
             canWrite = true;
             return;
@@ -182,6 +207,12 @@ void MainWindow::disconnected() {
     ui->textField->setDisabled(true);
     ui->disconnectButton->setDisabled(true);
     ui->connectButton->setDisabled(false);
+
+//  TODO - uncomment before prod
+//    ui->addDoc->setDisabled(true);
+//    ui->docName->setDisabled(true);
+//    ui->removeDoc->setDisabled(true);
+//    ui->documentList->setDisabled(true);
     clientConnected = false;
 }
 
@@ -190,6 +221,12 @@ void MainWindow::connected() {
     ui->textField->setDisabled(false);
     ui->disconnectButton->setDisabled(false);
     ui->connectButton->setDisabled(true);
+
+//  TODO - uncomment before prod
+//    ui->addDoc->setDisabled(false);
+//    ui->docName->setDisabled(false);
+//    ui->removeDoc->setDisabled(false);
+//    ui->documentList->setDisabled(false);
 
     if(tcpSocket->write("b:newUser:-", 12) == -1) {
         std::cout<<"Not send !!!!"<<std::endl;
@@ -280,18 +317,11 @@ void MainWindow::on_removeDoc_clicked()
 {
     QModelIndexList selectedItems = ui->documentList->selectionModel()->selectedRows();
     foreach(QModelIndex item, selectedItems) {
-        QString removedDoc = ui->documentList->currentItem()->text();
-        auto removedDocCommand = QStringLiteral("b:delDoc:%1:-").arg(removedDoc);
-        QByteArray ba = removedDocCommand.toLatin1();
-        const char *c_str2 = ba.data();
-
-        if(tcpSocket->write(c_str2, removedDocCommand.length()) == -1) {
-            std::cout<<"newDoc not send!!!!"<<std::endl;
-        } else {
-            std::cout<<"newDoc send!!!!"<<std::endl;
-        }
-
         ui->documentList->model()->removeRow(item.row());
+    }
+
+    if(tcpSocket->write("b:delDoc:-", 12) == -1) {
+        std::cout<<"delDoc not send!!!!"<<std::endl;
     }
 
 }

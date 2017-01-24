@@ -82,7 +82,7 @@
      <string/>
     </property>
     <property name="text">
-     <string>1251</string>
+     <string>1229</string>
     </property>
    </widget>
    <widget class="QPushButton" name="connectButton">

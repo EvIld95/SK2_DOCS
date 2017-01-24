@@ -4,6 +4,7 @@
 #include <QMainWindow>
 #include <QtNetwork>
 #include <QMessageBox>
+#include <QListWidgetItem>
 
 namespace Ui {
 class MainWindow;
@@ -33,6 +34,7 @@ private slots:
 
     void on_removeDoc_clicked();
     void on_addDoc_clicked();
+    void on_documentList_itemDoubleClicked(QListWidgetItem *item);
 
 public:
     void backspaceService();
