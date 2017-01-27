@@ -11,8 +11,6 @@ sys/types.h
 -
 iostream
 -
-sys/wait.h
--
 sys/socket.h
 -
 netinet/in.h
@@ -21,20 +19,12 @@ arpa/inet.h
 -
 unistd.h
 -
-netdb.h
--
 signal.h
 -
-stdio.h
--
-stdlib.h
--
-string.h
--
-time.h
--
-pthread.h
--
 vector
+-
+map
+-
+sstream
 -
 

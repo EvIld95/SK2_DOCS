@@ -82,7 +82,7 @@
      <string/>
     </property>
     <property name="text">
-     <string>1229</string>
+     <string>1994</string>
     </property>
    </widget>
    <widget class="QPushButton" name="connectButton">
@@ -118,6 +118,9 @@
     </property>
    </widget>
    <widget class="QListWidget" name="documentList">
+    <property name="enabled">
+     <bool>false</bool>
+    </property>
     <property name="geometry">
      <rect>
       <x>670</x>
@@ -141,6 +144,9 @@
     </property>
    </widget>
    <widget class="QPushButton" name="addDoc">
+    <property name="enabled">
+     <bool>false</bool>
+    </property>
     <property name="geometry">
      <rect>
       <x>760</x>
@@ -154,6 +160,9 @@
     </property>
    </widget>
    <widget class="QPushButton" name="removeDoc">
+    <property name="enabled">
+     <bool>false</bool>
+    </property>
     <property name="geometry">
      <rect>
       <x>790</x>
@@ -167,6 +176,9 @@
     </property>
    </widget>
    <widget class="QTextEdit" name="docName">
+    <property name="enabled">
+     <bool>false</bool>
+    </property>
     <property name="geometry">
      <rect>
       <x>670</x>
@@ -174,6 +186,24 @@
       <width>91</width>
       <height>31</height>
      </rect>
+    </property>
+   </widget>
+   <widget class="QLabel" name="docLabel">
+    <property name="geometry">
+     <rect>
+      <x>12</x>
+      <y>53</y>
+      <width>101</width>
+      <height>21</height>
+     </rect>
+    </property>
+    <property name="font">
+     <font>
+      <pointsize>11</pointsize>
+     </font>
+    </property>
+    <property name="text">
+     <string>Document1</string>
     </property>
    </widget>
   </widget>

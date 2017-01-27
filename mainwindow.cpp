@@ -208,11 +208,10 @@ void MainWindow::disconnected() {
     ui->disconnectButton->setDisabled(true);
     ui->connectButton->setDisabled(false);
 
-//  TODO - uncomment before prod
-//    ui->addDoc->setDisabled(true);
-//    ui->docName->setDisabled(true);
-//    ui->removeDoc->setDisabled(true);
-//    ui->documentList->setDisabled(true);
+    ui->addDoc->setDisabled(true);
+    ui->docName->setDisabled(true);
+    ui->removeDoc->setDisabled(true);
+    ui->documentList->setDisabled(true);
     clientConnected = false;
 }
 
@@ -222,11 +221,10 @@ void MainWindow::connected() {
     ui->disconnectButton->setDisabled(false);
     ui->connectButton->setDisabled(true);
 
-//  TODO - uncomment before prod
-//    ui->addDoc->setDisabled(false);
-//    ui->docName->setDisabled(false);
-//    ui->removeDoc->setDisabled(false);
-//    ui->documentList->setDisabled(false);
+    ui->addDoc->setDisabled(false);
+    ui->docName->setDisabled(false);
+    ui->removeDoc->setDisabled(false);
+    ui->documentList->setDisabled(false);
 
     if(tcpSocket->write("b:newUser:-", 12) == -1) {
         std::cout<<"Not send !!!!"<<std::endl;
@@ -308,8 +306,8 @@ void MainWindow::on_addDoc_clicked()
     ui->docName->clear();
     ui->documentList->insertItem(0, testItem);
 
-    if(tcpSocket->write("b:newDoc:-", 12) == -1) {
-        std::cout<<"newDoc not send!!!!"<<std::endl;
+    if(tcpSocket->write("b:addDoc:-", 12) == -1) {
+        std::cout<<"addDoc not send!!!!"<<std::endl;
     }
 }
 
@@ -329,11 +327,12 @@ void MainWindow::on_removeDoc_clicked()
 void MainWindow::on_documentList_itemDoubleClicked(QListWidgetItem *item)
 {
     QString selectedDoc = item->text();
-    auto removedDocCommand = QStringLiteral("b:selDoc:%1:-").arg(selectedDoc);
-    QByteArray ba = removedDocCommand.toLatin1();
+    ui->docLabel->setText(selectedDoc);
+    auto selDocCommand = QStringLiteral("b:selDoc:%1:-").arg(selectedDoc);
+    QByteArray ba = selDocCommand.toLatin1();
     const char *c_str2 = ba.data();
 
-    if(tcpSocket->write(c_str2, removedDocCommand.length()) == -1) {
+    if(tcpSocket->write(c_str2, selDocCommand.length()) == -1) {
         std::cout<<"selDoc not send!!!!"<<std::endl;
     } else {
         std::cout<<"selDoc send!!!!"<<std::endl;

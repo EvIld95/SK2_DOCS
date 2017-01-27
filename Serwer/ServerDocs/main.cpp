@@ -1,26 +1,21 @@
 #include <sys/types.h>
 #include <iostream>
-#include <sys/wait.h>
 #include <sys/socket.h>
 #include <netinet/in.h>
 #include <arpa/inet.h>
 #include <unistd.h>
-#include <netdb.h>
 #include <signal.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <time.h>
-#include <pthread.h>
 #include <vector>
+#include <map>
+#include <sstream>
 
-#define SERVER_PORT 1229
+#define SERVER_PORT 1994
 #define QUEUE_SIZE 5
 #define BUF_SIZE 1024
 
 std::vector<int> clients;
 std::vector<char *> messages;
-std::vector<char *> docs;
+std::map<int, std::string> docs;
 std::vector<int> senders;
 std::vector<pthread_t *> threads;
 
@@ -40,15 +35,39 @@ void *senderBuf(void *t_data) {
         if (messages.size() > 0 && senders.size() > 0) {
 
             char *message = messages[0];
+            std::string message_str = message;
             messages.erase(messages.begin());
             int sender = senders[0];
             senders.erase(senders.begin());
             pthread_t *threadID = threads[0];
             threads.erase(threads.begin());
 
-            if (strcmp(message, "b:newDoc:-") == 0) {
+            if (message_str.find("b:selDoc:") != std::string::npos) {
                 if (clients.size() > 1) {
-                    std::cout << "newDoc" << std::endl;
+                    std::cout << "selDoc" << std::endl;
+
+                    std::istringstream ss(message);
+                    std::string token;
+                    std::vector<std::string> tokens;
+
+                    while (std::getline(ss, token, ':')) {
+                        if (token != "-")
+                            tokens.push_back(token);
+                    }
+
+                    docs[sender] = tokens.back();
+
+                    for (int i = 0; i < clients.size(); i++) {
+                        if (clients[i] == sender)
+                            continue;
+                        if (docs[clients[i]] == docs[sender])
+                            if (write(clients[i], "b:c:-", 5) == -1)
+                                std::cout << "ERROR" << std::endl;
+                    }
+                }
+            } else if (strcmp(message, "b:addDoc:-") == 0) {
+                if (clients.size() > 1) {
+                    std::cout << "addDoc" << std::endl;
                     if (write(sender, "b:t:-", 5) == -1) {
                         std::cout << "ERROR" << std::endl;
                     } //sending back to sender
@@ -56,6 +75,7 @@ void *senderBuf(void *t_data) {
             } else if (strcmp(message, "b:delDoc:-") == 0) {
                 if (clients.size() > 1) {
                     std::cout << "delDoc" << std::endl;
+                    docs.erase(sender);
                     if (write(sender, "b:t:-", 5) == -1) {
                         std::cout << "ERROR" << std::endl;
                     } //sending back to sender
@@ -86,6 +106,8 @@ void *senderBuf(void *t_data) {
             } else {
                 for (int k = 0; k < clients.size(); k++) {
                     if (clients[k] == sender) {
+                        continue;
+                    } else if (docs[clients[k]] != docs[sender]) {
                         continue;
                     } else {
 
@@ -204,6 +226,8 @@ int main(int argc, char *argv[]) {
         } else {
             pthread_t *thread_receiver = new pthread_t;
             clients.push_back(connection_socket_descriptor);
+
+            docs[connection_socket_descriptor] = "Document1";
 
             thread_data_t *t_data = new thread_data_t();
             t_data->socket_descriptor = connection_socket_descriptor;
